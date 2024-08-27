@@ -10,6 +10,7 @@ from commands import cmds
 from street import *
 from plot import *
 from intersection import *
+from graph import generate_graph
 
 init(autoreset=True)
 
@@ -31,7 +32,9 @@ def promote(i):
 def main():
     # while True:
         streets = []
-        
+        intersections = list()
+        edges = list()
+
         for i in range(len(cmds)):
             tokens = promote(i)
             cmd = tokens.pop(0)
@@ -50,9 +53,11 @@ def main():
                 case _:
                     print("cmd : Error")
 
-        intersections = find_intersections(streets)
-        plot_streets_intersections(streets, intersections)
-    
+        intersections, edges = find_intersections(streets)
+        
+        generate_graph(edges)
+        # plot_streets_intersections(streets, intersections)
+
 if __name__ == "__main__":
     main()
 

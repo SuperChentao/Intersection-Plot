@@ -8,6 +8,9 @@ def find_intersections(streets):
     """find intersections for all streets"""
     roads = list()
     intersections = set()
+    intersection_roads = set()
+    intersection_roads2 = set()
+    intersection_roads3 = set()
 
     for street in streets:
         roads.append(street.roads)
@@ -25,8 +28,53 @@ def find_intersections(streets):
                 intersection = calculate_intersection(road1, road2)
                 print(Fore.BLUE + f"adding {intersection}, id: {id(intersection)}")
                 intersections.add(intersection)
+                intersection_roads.add(Road(road1.start, intersection))
+                intersection_roads.add(Road(road1.end, intersection))
+                intersection_roads.add(Road(road2.start, intersection))
+                intersection_roads.add(Road(road2.end, intersection))
                 print(Fore.RED + f"Intersection found on {intersection}, crossed by {road1} and {road2}")
     
+    for road in intersection_roads:
+        seperate = False
+        for intersection in intersections:
+            if on_segment(road.start, road.end, intersection) and not orientation(road.start, road.end, intersection):  #If intersection is on the segment
+                # print(Fore.YELLOW + f"found {intersection} on segment or end point of {road}")
+                if not intersection == road.start and not intersection == road.end:
+                    print(Fore.YELLOW + f"found {intersection} on segment {road}")
+                    
+                    road1 = Road(intersection, road.start)
+                    road2 = Road(intersection, road.end)
+                    if road1 in intersection_roads:
+                        print(Fore.YELLOW + f"{road1} already in set")
+                    else:
+                        intersection_roads2.add(road1)
+                        print(Fore.YELLOW + f"{road1} added to set")
+                    
+                    if road2 in intersection_roads:
+                        print(Fore.YELLOW + f"{road2} already in set")
+                    else:
+                        intersection_roads2.add(road2)
+                        print(Fore.YELLOW + f"{road2} added to set")
+                    seperate = True
+
+        if not seperate:
+            intersection_roads2.add(road)
+
+    for road in intersection_roads2:
+        on_seg = False
+        for  intersection in intersections:
+            if on_segment(road.start, road.end, intersection) and not orientation(road.start, road.end, intersection):  # If intersection is on the segment
+                if not (road.start == intersection or road.end == intersection):    # If intersction is on the end point
+                    print(Fore.CYAN + f"{intersection} is on segment {road}")
+                    on_seg = True
+        
+        if(not on_seg):
+            intersection_roads3.add(road)
+
+                
+
+            
+
     all_roads = [road for sublist in roads for road in sublist]
     for road in all_roads:
         if road.intersected:
@@ -34,7 +82,10 @@ def find_intersections(streets):
             intersections.add(road.end)
 
     print(f"{len(intersections)} intersections:\n{intersections}")
-    return intersections
+    print(f"intersection_roads {len(intersection_roads)} edges:\n{intersection_roads}")
+    print(f"intersection_roads2 {len(intersection_roads2)} edges:\n{intersection_roads2}")
+    print(f"intersection_roads3 {len(intersection_roads3)} edges:\n{intersection_roads3}")
+    return list(intersections), list(intersection_roads2)
 
 def on_segment(p, q, r):
     return min(p.x, q.x) <= r.x <= max(p.x, q.x) and min(p.y, q.y) <= r.y <= max(p.y, q.y)
