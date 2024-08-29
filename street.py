@@ -8,8 +8,11 @@ class Street:
     #     output = ""
     #     for road in self.roads:
 
-    def add_line(self):
-        return
+    def update_roads(self, roads):
+        self.roads = roads
+    
+    def get_name(self):
+        return self.name
     
 
 from point import Point

@@ -16,9 +16,9 @@ init(autoreset=True)
 
 class Operation(Enum):
     ADD = "add"
-    MOD = "modify"
-    RMV = "remove"
-    GEN = "generate"
+    MOD = "mod"
+    RMV = "rm"
+    GEN = "gg"
 
 def promote(i):
     print("(1) add a street, (2) modify a street, (3) remove a street, and, (4) generate a graph")
@@ -45,18 +45,32 @@ def main():
                     streets.append(street)
 
                 case Operation.MOD.value:
-                    print(f"cmd : {cmd}")
+                    print(Fore.CYAN + f"cmd : {cmd}")
+                    # Assume the street exists
+                    mod_street = create_street(tokens)
+                    print(f"mod street name: |{mod_street.get_name()}|")
+                    for s in streets:
+                        print(f"gay name: |{s.get_name()}|")
+                        if(s.get_name() == mod_street.get_name()):
+                            print("find mod street name")
+                            s.update_roads(mod_street.roads)
+                            break
+
                 case Operation.RMV.value:
-                    print(f"cmd : {cmd}")
+                    street_name = " ".join(map(str, tokens))
+                    print(f"street_name001: {street_name}")
+                    for s in streets:
+                        if(s.get_name() == street_name):
+                            streets.remove(s)
+                            break
+
                 case Operation.GEN.value:
                     print(f"cmd : {cmd}")
+                    intersections, edges = find_intersections(streets)
+                    generate_graph(edges)
+                    plot_streets_intersections(streets, intersections)
                 case _:
                     print("cmd : Error")
-
-        intersections, edges = find_intersections(streets)
-        
-        generate_graph(edges)
-        # plot_streets_intersections(streets, intersections)
 
 if __name__ == "__main__":
     main()

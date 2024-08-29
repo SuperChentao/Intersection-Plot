@@ -7,7 +7,8 @@ def generate_graph(edges):
     intersections = sorted(list(intersections))
 
     for i in range(len(intersections)):
-        intersections[i].set_id(i+1)
+        if(intersections[i].id == -1):
+            intersections[i].set_id(i+1)
 
     print("\nV = {")
     for i in intersections:
