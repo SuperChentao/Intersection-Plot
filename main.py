@@ -7,7 +7,7 @@ from colorama import Fore, init
 from regex_pattern import COORDINATE_PATTERN
 import logging
 
-from config import cmds2
+from config import cmds
 import config
 # from point import Point
 # from road import Road
@@ -30,7 +30,7 @@ class Operation(Enum):
 def promote(i):
     print("(1) add a street, (2) modify a street, (3) remove a street, and, (4) generate a graph")
     # line = sys.stdin.readline()
-    line = cmds2[i]
+    line = cmds[i]
     tokens = line.split()
     return tokens
 
@@ -56,7 +56,7 @@ def main():
         intersections = list()
         edges = list()
 
-        for i in range(len(cmds2)):
+        for i in range(len(cmds)):
             tokens = promote(i)
             cmd = tokens.pop(0)
 

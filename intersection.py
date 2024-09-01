@@ -1,6 +1,5 @@
-from colorama import Fore, init
+from colorama import Fore
 import logging
-init(autoreset=True)
 
 from point import Point, Intersection
 from road import Road
@@ -10,25 +9,23 @@ def find_intersections(streets):
     roads = list()
     intersections = set()
     intersection_roads = set()
-    intersection_roads2 = set()
-    intersection_roads3 = set()
 
     for street in streets:
         roads.append(street.roads)
     
-    logging.debug(f"roads:\n{roads}")
     all_roads = [road for sublist in roads for road in sublist]
-    print(f"All roads:\n{all_roads}\n")
+    logging.debug(f"all roads:\n{roads}\n")
     
+    # Find intersections for all roads, and add them into sets
     while all_roads:
         road1 = all_roads.pop(0)
-        logging.debug(Fore.GREEN + f"road1 is {road1}")
         for road2 in all_roads:
             logging.debug(f"Checking intersection between:{road1} and {road2}")
             if(road1.end != road2.start and road1.start != road2.end and determine_intersection_existence(road1, road2)):
                 intersection = calculate_intersection(road1, road2)
-                logging.debug(Fore.BLUE + f"adding {intersection}, id: {id(intersection)}")
                 intersections.add(intersection)
+                logging.debug(Fore.YELLOW + f"Intersection found on {intersection}, crossed by {road1} and {road2}")
+
                 if intersection != road1.start:
                     intersection_roads.add(Road(road1.start, intersection))
                 if intersection != road1.end:                    
@@ -37,63 +34,30 @@ def find_intersections(streets):
                     intersection_roads.add(Road(road2.start, intersection))
                 if intersection != road2.end:                    
                     intersection_roads.add(Road(road2.end, intersection))
-                logging.debug(Fore.RED + f"Intersection found on {intersection}, crossed by {road1} and {road2}")
     
-    for road in intersection_roads:
-        seperate = False
-        for intersection in intersections:
-            if on_segment(road.start, road.end, intersection) and not orientation(road.start, road.end, intersection):  #If intersection is on the segment
-                # logging.debug(Fore.YELLOW + f"found {intersection} on segment or end point of {road}")
-                if not intersection == road.start and not intersection == road.end:
-                    logging.debug(Fore.YELLOW + f"found {intersection} on segment {road}")
-                    
-                    road1 = Road(intersection, road.start)
-                    road2 = Road(intersection, road.end)
-                    if road1 in intersection_roads:
-                        logging.debug(Fore.YELLOW + f"{road1} already in set")
-                    else:
-                        intersection_roads2.add(road1)
-                        logging.debug(Fore.YELLOW + f"{road1} added to set")
-                    
-                    if road2 in intersection_roads:
-                        logging.debug(Fore.YELLOW + f"{road2} already in set")
-                    else:
-                        intersection_roads2.add(road2)
-                        logging.debug(Fore.YELLOW + f"{road2} added to set")
-                    seperate = True
+    # Loop until no intersection found on segments
+    count = 0
+    while True:
+        intersection_roads, found_segment_intersection = break_segments(intersection_roads, intersections)
+        count += 1
+        logging.debug(Fore.YELLOW + f"count: {count}")
 
-        if not seperate:
-            intersection_roads2.add(road)
+        if not found_segment_intersection:
+            break
 
-    # for road in intersection_roads2:
-    #     on_seg = False
-    #     for  intersection in intersections:
-    #         if on_segment(road.start, road.end, intersection) and not orientation(road.start, road.end, intersection):  # If intersection is on the segment
-    #             if not (road.start == intersection or road.end == intersection):    # If intersction is on the end point
-    #                 logging.debug(Fore.CYAN + f"{intersection} is on segment {road}")
-    #                 on_seg = True
-        
-    #     if(not on_seg):
-    #         intersection_roads3.add(road)
+    edges = list(filter(lambda road : road.start is not road.end, intersection_roads))
 
-    intersection_roads3 = list(filter(lambda road : road.start is not road.end, intersection_roads2))
+    for edge in edges:
+            intersections.add(edge.start)
+            intersections.add(edge.end)
 
-            
+    logging.debug(Fore.YELLOW + f"intersection_roads {len(edges)} edges:\n{edges}")
+    return list(intersections), edges
 
-    all_roads = [road for sublist in roads for road in sublist]
-    for road in all_roads:
-        if road.intersected:
-            intersections.add(road.start)
-            intersections.add(road.end)
-
-    logging.debug(f"{len(intersections)} intersections:\n{intersections}")
-    logging.debug(f"intersection_roads {len(intersection_roads)} edges:\n{intersection_roads}")
-    logging.debug(f"intersection_roads2 {len(intersection_roads2)} edges:\n{intersection_roads2}")
-    logging.debug(f"intersection_roads3 {len(intersection_roads3)} edges:\n{intersection_roads3}")
-    return list(intersections), intersection_roads3
 
 def on_segment(p, q, r):
     return min(p.x, q.x) <= r.x <= max(p.x, q.x) and min(p.y, q.y) <= r.y <= max(p.y, q.y)
+
 
 def orientation(p, q, r):
     val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y)
@@ -103,6 +67,7 @@ def orientation(p, q, r):
         return 1  # Clockwise
     else:
         return 2  # Counterclockwise
+
 
 def determine_intersection_existence(road1, road2):
     a = road1.start
@@ -139,6 +104,7 @@ def determine_intersection_existence(road1, road2):
     # If none of the cases hold, they do not intersect
     return False
 
+
 def calculate_intersection(road1, road2):
     p1 = road1.start
     q1 = road1.end
@@ -162,3 +128,36 @@ def calculate_intersection(road1, road2):
     road1.set_intersected()
     road2.set_intersected()
     return intersection
+
+
+def break_segments(intersection_roads, intersections):
+    intersection_roads2 = set()
+    found_segment_intersection = False
+
+    for road in intersection_roads:
+        seperate = False    # if the segment is seperated
+        for intersection in intersections:
+            # If intersection is on the segment
+            if on_segment(road.start, road.end, intersection) and not orientation(road.start, road.end, intersection):
+                if not intersection == road.start and not intersection == road.end:
+                    logging.debug(Fore.YELLOW + f"found {intersection} on segment {road}, breaking the segment")
+                    seperate = True
+                    found_segment_intersection = True
+                    
+                    road1 = Road(intersection, road.start)
+                    road2 = Road(intersection, road.end)
+
+                    if not road1 in intersection_roads:
+                        intersection_roads2.add(road1)
+                        
+                        logging.debug(Fore.YELLOW + f"{road1} added to set")
+                        
+                    if not road2 in intersection_roads:
+                        intersection_roads2.add(road2)
+                        found_segment_intersection = True
+                        logging.debug(Fore.YELLOW + f"{road2} added to set")
+                        
+        if not seperate:
+            intersection_roads2.add(road)
+    
+    return intersection_roads2, found_segment_intersection
