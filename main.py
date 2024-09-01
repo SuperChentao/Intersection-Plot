@@ -1,6 +1,4 @@
 import sys
-import re
-
 
 from enum import Enum
 from colorama import Fore, init
@@ -15,9 +13,6 @@ from street import *
 from plot import *
 from intersection import *
 from graph import generate_graph
-
-import test as t
-
 
 init(autoreset=True)
 
@@ -41,7 +36,7 @@ def set_debug_mode():
         if mode.lower() == "debug":
             config.debug_mode = True
             logging.basicConfig(level=logging.DEBUG)
-            logging.debug("running on debug mode")
+            logging.debug(Fore.YELLOW + "running on debug mode")
             return
         
     logging.basicConfig(level=logging.INFO)
@@ -50,7 +45,6 @@ def set_debug_mode():
 
 def main():
         set_debug_mode()
-        # sys.exit()
     # while True:
         streets = []
         intersections = list()

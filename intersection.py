@@ -14,13 +14,13 @@ def find_intersections(streets):
         roads.append(street.roads)
     
     all_roads = [road for sublist in roads for road in sublist]
-    logging.debug(f"all roads:\n{roads}\n")
+    logging.debug(Fore.YELLOW + f"all roads:\n{roads}\n")
     
     # Find intersections for all roads, and add them into sets
     while all_roads:
         road1 = all_roads.pop(0)
         for road2 in all_roads:
-            logging.debug(f"Checking intersection between:{road1} and {road2}")
+            logging.debug(Fore.YELLOW + f"Checking intersection between:{road1} and {road2}")
             if(road1.end != road2.start and road1.start != road2.end and determine_intersection_existence(road1, road2)):
                 intersection = calculate_intersection(road1, road2)
                 intersections.add(intersection)
