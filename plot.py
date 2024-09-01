@@ -1,12 +1,13 @@
 from matplotlib import collections
 import pylab as pl
 import numpy as np
+import logging
 
 def plot_street(street):
     roads = street.roads
-    print(f"Ploting:")
-    print(street.name)
-    print(roads)
+    logging.debug(f"Ploting:")
+    logging.debug(street.name)
+    logging.debug(roads)
     line = list()
     for road in roads:
         if not road.start in line:
@@ -15,13 +16,13 @@ def plot_street(street):
 
     return line
     
-    # print(f"line: {line}")
+    # logging.debug(f"line: {line}")
     # for point in line:
-    #     print(id(point))
+    #     logging.debug(id(point))
 
     # lines = list()
     # lines.append(line)
-    # print(lines)
+    # logging.debug(lines)
 
 
 

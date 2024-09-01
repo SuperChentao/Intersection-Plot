@@ -23,8 +23,6 @@ class Road:
         return (self.start == other.start and self.end == other.end) or (self.end == other.start and self.start == other.end)
     
     def __hash__(self):
-        print(f"min: {min(self.start, self.end)}")
-        print(f"max: {max(self.start, self.end)}")
         return hash((min(self.start, self.end), max(self.start, self.end)))
         
         # return hash((self.start, self.end))

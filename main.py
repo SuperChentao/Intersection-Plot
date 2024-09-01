@@ -1,16 +1,23 @@
 import sys
 import re
 
+
 from enum import Enum
 from colorama import Fore, init
 from regex_pattern import COORDINATE_PATTERN
-from commands import cmds
+import logging
+
+from config import cmds2
+import config
 # from point import Point
 # from road import Road
 from street import *
 from plot import *
 from intersection import *
 from graph import generate_graph
+
+import test as t
+
 
 init(autoreset=True)
 
@@ -23,54 +30,56 @@ class Operation(Enum):
 def promote(i):
     print("(1) add a street, (2) modify a street, (3) remove a street, and, (4) generate a graph")
     # line = sys.stdin.readline()
-    line = cmds[i]
+    line = cmds2[i]
     tokens = line.split()
     return tokens
 
+def set_debug_mode():
+    arguments = sys.argv
+    if len(arguments) > 1:
+        mode = arguments[1]
+        if mode.lower() == "debug":
+            config.debug_mode = True
+            logging.basicConfig(level=logging.DEBUG)
+            logging.debug("running on debug mode")
+            return
+        
+    logging.basicConfig(level=logging.INFO)
+    logging.info(Fore.GREEN + f"running on standard mode\n")
 
 
 def main():
+        set_debug_mode()
+        # sys.exit()
     # while True:
         streets = []
         intersections = list()
         edges = list()
 
-        for i in range(len(cmds)):
+        for i in range(len(cmds2)):
             tokens = promote(i)
             cmd = tokens.pop(0)
 
             match cmd:
                 case Operation.ADD.value:
                     street = create_street(tokens)
+                    if not street:
+                        continue
                     streets.append(street)
 
                 case Operation.MOD.value:
-                    print(Fore.CYAN + f"cmd : {cmd}")
-                    # Assume the street exists
-                    mod_street = create_street(tokens)
-                    print(f"mod street name: |{mod_street.get_name()}|")
-                    for s in streets:
-                        print(f"gay name: |{s.get_name()}|")
-                        if(s.get_name() == mod_street.get_name()):
-                            print("find mod street name")
-                            s.update_roads(mod_street.roads)
-                            break
-
+                    modify_street(streets, tokens)
+  
                 case Operation.RMV.value:
-                    street_name = " ".join(map(str, tokens))
-                    print(f"street_name001: {street_name}")
-                    for s in streets:
-                        if(s.get_name() == street_name):
-                            streets.remove(s)
-                            break
+                    remove_street(streets, tokens)
 
                 case Operation.GEN.value:
-                    print(f"cmd : {cmd}")
                     intersections, edges = find_intersections(streets)
                     generate_graph(edges)
                     plot_streets_intersections(streets, intersections)
+
                 case _:
-                    print("cmd : Error")
+                    print(Fore.RED + f"command: {cmd} doesn't exist, please start with add, mod, rm, gg\n")
 
 if __name__ == "__main__":
     main()
